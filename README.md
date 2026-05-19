@@ -1,0 +1,2 @@
+# AI-Based-Log-investigation-and-report-generation
+ This project is a cyber-forensics dashboard for ingesting logs, parsing events, detecting suspicious activity with an AI model, preserving evidence with hash chaining, filtering investigations, &amp; exporting reports.  For full project explanation, architecture, workflow, SOLID design, database schema, &amp; usage guide, read:   PROJECT_DOCUMENTATION.md
