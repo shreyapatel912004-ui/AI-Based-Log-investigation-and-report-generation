@@ -37,12 +37,6 @@ Open:
 http://127.0.0.1:5000/
 ```
 
-Demo login users:
-
-| Username | Password | Role |
-| --- | --- | --- |
-| `admin1` | `admin123` | Administrator |
-| `manager1` | `manager123` | Investigation Manager |
 
 ## Real System Logs
 
