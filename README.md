@@ -18,7 +18,7 @@ PROJECT_DOCUMENTATION.md
 - AI-assisted attack scoring using the existing LSTM model and scaler
 - Heuristic fallback scoring if the model cannot load
 - Explainable alert reasons for investigator review
-- SQLite storage in `forensics.db`
+- SQLite storage in `data/forensics.db`
 - SHA-256 chain-of-custody hash for every stored log
 - Search and filters by verdict, severity, source IP, event type, and raw text
 - Charts for verdict distribution and top source IPs
@@ -47,18 +47,14 @@ Windows `.evtx` files are binary. Export them from Windows Event Viewer as XML, 
 ## Main Files
 
 - `main.py` - Flask routes and dependency wiring
-- `domain.py` - shared data objects
-- `log_parser.py` - log parsing and feature extraction
-- `scoring.py` - AI scoring, heuristic scoring, and event classification
-- `repository.py` - SQLite persistence and chain-of-custody hashing
-- `investigation_service.py` - application workflow orchestration
-- `summary.py` - investigation summaries and chart data
-- `reporting.py` - JSON, CSV, and PDF report generation
-- `analyzer.py` - compatibility wrapper for older scripts
-- `templates/index.html` - dashboard layout
-- `static/script.js` - dashboard interactions, charts, filters, exports
-- `static/style.css` - dashboard styling
-- `attack_detection_model.h5` and `scaler.pkl` - AI attack detection assets
+- `app.py` - alternate Flask launcher that imports `main.py`
+- `backend/` - parsing, scoring, storage, report generation, and investigation services
+- `frontend/templates/` - dashboard and login HTML templates
+- `frontend/static/` - dashboard JavaScript and CSS
+- `ml_model/` - saved AI model, scaler, and NumPy evaluation assets
+- `data/` - SQLite database and sample log files
+- `scripts/` - model evaluation, inference, and sample-log generation helpers
+- `docs/PROJECT_DOCUMENTATION.md` - full project documentation
 
 ## SOLID Design
 

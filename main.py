@@ -4,17 +4,17 @@ from functools import wraps
 from flask import Flask, Response, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from file_ingestion import LogFileReader
-from investigation_service import InvestigationService
-from log_parser import LogParser
-from reporting import ReportExporter
-from repository import LogRepository
-from scoring import CompositeRiskScorer, EventClassifier, EventScoringService, HeuristicRiskScorer, LstmRiskScorer
-from summary import InvestigationSummary
+from backend.file_ingestion import LogFileReader
+from backend.investigation_service import InvestigationService
+from backend.log_parser import LogParser
+from backend.reporting import ReportExporter
+from backend.repository import LogRepository
+from backend.scoring import CompositeRiskScorer, EventClassifier, EventScoringService, HeuristicRiskScorer, LstmRiskScorer
+from backend.summary import InvestigationSummary
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "forensics.db"
+DB_PATH = BASE_DIR / "data" / "forensics.db"
 
 repository = LogRepository(DB_PATH)
 summary_builder = InvestigationSummary()
@@ -30,7 +30,11 @@ investigation_service = InvestigationService(
     summary_builder=summary_builder,
 )
 
-app = Flask(__name__, template_folder=str(BASE_DIR / "templates"), static_folder=str(BASE_DIR / "static"))
+app = Flask(
+    __name__,
+    template_folder=str(BASE_DIR / "frontend" / "templates"),
+    static_folder=str(BASE_DIR / "frontend" / "static"),
+)
 app.secret_key = "cyber-forensics-demo-secret"
 
 USERS = {
@@ -140,7 +144,7 @@ def get_results():
 @app.get("/export/<file_type>")
 @login_required
 def export_report(file_type):
-    result = investigation_service.search(request_filters(), limit=1000)
+    result = investigation_service.search(request_filters(), limit=10000)
     summary = result["summary"]
     events = result["events"]
 

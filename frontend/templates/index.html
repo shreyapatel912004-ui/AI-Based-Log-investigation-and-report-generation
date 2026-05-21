@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Log Investigation Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-username="{{ username }}" data-role="{{ role }}">
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-mark">AI</span>
+            <div>
+                <h1>Log Investigation</h1>
+                <p>Forensic dashboard</p>
+            </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Dashboard sections">
+            <a href="#ingest" class="active">Ingest</a>
+            <a href="#overview">Overview</a>
+            <a href="#events">Events</a>
+            <a href="#exports">Exports</a>
+        </nav>
+
+        <div class="user-panel">
+            <span id="currentUser">{{ username }}</span>
+            <small>{{ role }}</small>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </aside>
+
+    <main class="shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Chain-of-custody analysis</p>
+                <h2>AI-Based Log Investigation</h2>
+            </div>
+            <div class="status-pill" id="modelStatus">Ready</div>
+        </header>
+
+        <section class="panel ingest-panel" id="ingest">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Evidence intake</p>
+                    <h3>Analyze logs</h3>
+                </div>
+                <button class="ghost-button" id="loadSampleBtn" type="button">Load sample</button>
+            </div>
+
+            <div class="case-row">
+                <label for="caseName">Case name</label>
+                <input id="caseName" type="text" value="Default Investigation" autocomplete="off">
+            </div>
+
+            <textarea id="logInput" spellcheck="false" placeholder="Paste firewall, auth, web server, endpoint, CSV, JSON, XML, or mixed logs here..."></textarea>
+
+            <div class="action-row">
+                <button id="analyzeBtn" type="button">Analyze Logs</button>
+                <label class="file-picker" for="fileInput">Upload File</label>
+                <input id="fileInput" type="file" accept=".log,.txt,.csv,.json,.jsonl,.xml,.out">
+                <button class="danger-button" id="clearBtn" type="button">Clear Stored Logs</button>
+            </div>
+            <p class="message" id="messageBox"></p>
+        </section>
+
+        <section class="stats-grid" id="overview" aria-label="Investigation summary">
+            <article class="stat-card">
+                <span>Total Logs</span>
+                <strong id="totalLogs">0</strong>
+            </article>
+            <article class="stat-card alert">
+                <span>Alerts</span>
+                <strong id="alerts">0</strong>
+            </article>
+            <article class="stat-card attack">
+                <span>Attacks</span>
+                <strong id="attacks">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>Average Risk</span>
+                <strong id="averageRisk">0</strong>
+            </article>
+        </section>
+
+        <section class="chart-grid">
+            <article class="panel">
+                <div class="section-heading">
+                    <h3>Verdict Distribution</h3>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="verdictChart" width="520" height="300"></canvas>
+                    <div class="chart-tooltip" id="verdictChartTooltip" role="status"></div>
+                </div>
+            </article>
+            <article class="panel">
+                <div class="section-heading">
+                    <h3>Top Source IPs</h3>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="ipChart" width="520" height="300"></canvas>
+                    <div class="chart-tooltip" id="ipChartTooltip" role="status"></div>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel" id="events">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Investigation table</p>
+                    <h3>Stored events</h3>
+                </div>
+                <div class="export-group" id="exports">
+                    <button data-export="json" type="button">JSON</button>
+                    <button data-export="csv" type="button">CSV</button>
+                    <button data-export="pdf" type="button">PDF</button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <input id="searchFilter" type="search" placeholder="Search raw logs">
+                <select id="verdictFilter">
+                    <option value="">All verdicts</option>
+                    <option value="ATTACK">Attack</option>
+                    <option value="SUSPICIOUS">Suspicious</option>
+                    <option value="NORMAL">Normal</option>
+                </select>
+                <select id="severityFilter">
+                    <option value="">All severities</option>
+                    <option value="CRITICAL">Critical</option>
+                    <option value="ERROR">Error</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="ALERT">Alert</option>
+                    <option value="INFO">Info</option>
+                </select>
+                <input id="sourceIpFilter" type="text" placeholder="Source IP">
+                <input id="eventTypeFilter" type="text" placeholder="Event type">
+                <button class="ghost-button" id="refreshBtn" type="button">Refresh</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Time</th>
+                            <th>Source IP</th>
+                            <th>Severity</th>
+                            <th>Type</th>
+                            <th>Risk</th>
+                            <th>Verdict</th>
+                            <th>Explanation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsBody">
+                        <tr>
+                            <td colspan="8" class="empty-state">No events loaded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
