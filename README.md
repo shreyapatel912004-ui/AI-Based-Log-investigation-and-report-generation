@@ -37,11 +37,11 @@ docs/PROJECT_DOCUMENTATION.md
 
 User accounts are stored in SQLite inside `data/forensics.db`. Passwords are stored as Werkzeug password hashes, not plain text. On startup, the app creates default demo users if they do not already exist:
 
-| Username |  | Role |
+| Username | Password | Role |
 | --- | --- | --- |
-| `admin1` | `| Administrator |
-| `manager1` | | Investigation Manager |
-| `analyst1` |  | Analyst |
+| `admin1` | `admin123` | Administrator |
+| `manager1` | `manager123` | Investigation Manager |
+| `analyst1` | `analyst123` | Analyst |
 
 The login flow keeps `session["username"]` and `session["role"]` available for protected routes and case-scoped actions. Basic failed-login protection blocks authentication after repeated failed attempts.
 

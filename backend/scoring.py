@@ -81,6 +81,8 @@ class HeuristicRiskScorer(RiskScorer):
         repeated_ip_count = max(int(parsed_log.features[0]), 1)
         score += min(repeated_ip_count * 0.05, 0.25)
         score += sum(0.08 for term in SUSPICIOUS_TERMS if term in lowered)
+        if parsed_log.event_type == "firewall_port_scan" or any(term in lowered for term in ["port scan", "scan detected", "nmap"]):
+            score += 0.32
 
         if parsed_log.severity in {"ALERT", "CRITICAL"}:
             score += 0.28
@@ -158,12 +160,18 @@ class EventClassifier:
         return "NORMAL"
 
     def _is_clear_attack(self, lowered: str, parsed_log: ParsedLog) -> bool:
+        if parsed_log.event_type == "firewall_port_scan":
+            return True
+
         attack_patterns = [
             "powershell.exe -encodedcommand",
             "encodedcommand",
             "sqlmap",
             "union select",
             "' or '1'='1",
+            "port scan",
+            "scan detected",
+            "nmap",
             "file_deleted",
             "deleted /var/log",
             "ransomware",
@@ -208,6 +216,8 @@ class EventClassifier:
             reasons.append("suspicious command activity")
         if any(term in lowered for term in ["sqlmap", "union select", "' or '1'='1"]):
             reasons.append("web attack signature")
+        if parsed_log.event_type == "firewall_port_scan" or any(term in lowered for term in ["port scan", "scan detected", "nmap"]):
+            reasons.append("port scan activity")
         if any(term in lowered for term in ["delete", "deleted", "rm "]):
             reasons.append("destructive file activity")
         if parsed_log.features[0] > 3:

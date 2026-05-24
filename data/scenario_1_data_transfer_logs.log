@@ -1,0 +1,10 @@
+2026-05-18 09:02:11 WIN-ORG-07 Security EventID=4624 Account Name=rahul SourceNetworkAddress=10.20.4.55 Logon Type=2 Interactive logon successful
+2026-05-18 09:07:42 WIN-ORG-07 FileAudit user=rahul opened C:\Finance\Q4_confidential_client_list.xlsx
+2026-05-18 09:09:18 WIN-ORG-07 FileAudit user=rahul copied C:\Finance\Q4_confidential_client_list.xlsx to C:\Users\rahul\Desktop\client_list_copy.xlsx
+2026-05-18 09:11:03 WIN-ORG-07 Kernel-PnP USB device connected VID_18D1 PID_4EE7 serial=ANDROID-73K9 MTP removable device Android phone
+2026-05-18 09:12:27 WIN-ORG-07 MTPTransfer user=rahul copied C:\Users\rahul\Desktop\client_list_copy.xlsx to Android device serial=ANDROID-73K9 path=/sdcard/Download/client_list_copy.xlsx channel=USB
+2026-05-18 09:15:09 ANDROID-73K9 MediaProvider file=/sdcard/Download/client_list_copy.xlsx opened by app=com.google.android.apps.docs user=rahul
+2026-05-18 09:17:44 ANDROID-73K9 Bluetooth OBEX transfer sent /sdcard/Download/client_list_copy.xlsx to device=OnePlus-Nord channel=Bluetooth
+2026-05-18 09:21:36 ANDROID-73K9 Gmail app=Gmail user=rahul sent email to external.receiver@example.com attachment=/sdcard/Download/client_list_copy.xlsx source_ip=10.20.4.92
+2026-05-18 09:21:41 firewall01 allow TCP SRC=10.20.4.92 DST=142.250.195.37 DPT=587 SMTP mail upload attachment client_list_copy.xlsx
+2026-05-18 09:24:13 WIN-ORG-07 Security EventID=4634 Account Name=rahul Logoff completed

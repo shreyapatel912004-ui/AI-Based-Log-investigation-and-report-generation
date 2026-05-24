@@ -1,0 +1,10 @@
+2026-05-19 14:03:18 WIN-FIN-12 browser.exe user=meena downloaded http://updates-secure.example/download/invoice_viewer.exe to C:\Users\meena\Downloads\invoice_viewer.exe source_ip=203.0.113.77
+2026-05-19 14:04:02 WIN-FIN-12 host_ip=10.20.6.44 Security EventID=4688 Account Name=meena New Process Created Process Command Line: C:\Users\meena\Downloads\invoice_viewer.exe
+2026-05-19 14:04:37 WIN-FIN-12 host_ip=10.20.6.44 Security EventID=4688 Account Name=meena New Process Created Process Command Line: powershell.exe -EncodedCommand SQBFAFgA suspicious payload execution
+2026-05-19 14:05:08 WIN-FIN-12 host_ip=10.20.6.44 Defender CRITICAL malware ransomware payload detected process=invoice_viewer.exe file=C:\Users\meena\AppData\Roaming\svchost32.exe
+2026-05-19 14:05:44 WIN-FIN-12 host_ip=10.20.6.44 Security EventID=4688 Account Name=meena New Process Created Process Command Line: vssadmin.exe delete shadows /all /quiet shadow copy deletion
+2026-05-19 14:06:21 WIN-FIN-12 host_ip=10.20.6.44 FileAudit ransomware encrypted C:\Finance\payroll.xlsx to C:\Finance\payroll.xlsx.locked
+2026-05-19 14:06:48 WIN-FIN-12 host_ip=10.20.6.44 FileAudit ransomware encrypted C:\Finance\vendor_payments.pdf to C:\Finance\vendor_payments.pdf.locked
+2026-05-19 14:07:13 WIN-FIN-12 host_ip=10.20.6.44 FileAudit ransomware encrypted C:\HR\employee_records.csv to C:\HR\employee_records.csv.locked
+2026-05-19 14:08:02 WIN-FIN-12 host_ip=10.20.6.44 Application ERROR ransom_note.txt created at C:\Users\Public\README_RECOVER_FILES.txt
+2026-05-19 14:09:29 firewall01 block TCP SRC=10.20.6.44 DST=198.51.100.88 DPT=443 ransomware command and control beacon denied

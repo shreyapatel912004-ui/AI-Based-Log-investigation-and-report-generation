@@ -1,0 +1,218 @@
+AI-Based Log Investigation - Security Hardening Notes
+=====================================================
+
+Purpose
+-------
+This file records the security hardening work step by step so the project owner can review what was changed, why it was changed, and how it was verified.
+
+Current scope
+-------------
+The project already has:
+- SQLite-backed users
+- Password hashing through Werkzeug
+- Login/logout sessions
+- Failed-login counting
+- Case-based log segregation
+
+The remaining hardening work is being added carefully so existing features continue to work.
+
+
+Step 1 - Baseline Review
+------------------------
+Status: Completed
+
+What was reviewed:
+- main.py Flask app setup, routes, session config, upload routes, export route, clear route
+- backend/auth_service.py login/session behavior
+- backend/user_repository.py password hashing and failed-login tracking
+- backend/file_ingestion.py supported file types and .evtx blocking
+
+Findings:
+- Sessions already use HttpOnly and SameSite=Lax.
+- Secure cookies are enabled only when FLASK_ENV=production.
+- Passwords are hashed, not stored as plain text.
+- Case routes require login.
+- Missing hardening items include audit logging, explicit session timeout, request size limit, security response headers, and stronger production secret-key behavior.
+
+
+Step 2 - Planned First Hardening Batch
+--------------------------------------
+Status: Implemented
+
+Implemented changes:
+- Added backend/security.py.
+- Added security headers to every response:
+  - X-Content-Type-Options: nosniff
+  - X-Frame-Options: DENY
+  - Referrer-Policy: no-referrer
+  - Permissions-Policy disabling camera, microphone, and geolocation
+  - Cache-Control: no-store
+  - Content-Security-Policy limited to same-origin app resources
+- Added maximum request/upload size using Flask MAX_CONTENT_LENGTH.
+  - Default: 5 MB
+  - Can be changed with MAX_UPLOAD_BYTES environment variable.
+- Added session lifetime timeout.
+  - Default: 30 minutes
+  - Can be changed with SESSION_TIMEOUT_MINUTES environment variable.
+- Made authenticated sessions permanent so Flask applies the timeout.
+- Improved SECRET_KEY behavior:
+  - Development can still run with a fallback key.
+  - Production raises an error if SECRET_KEY is missing.
+- Added audit logging for sensitive actions:
+  - login success
+  - login failure
+  - logout
+  - case creation
+  - pasted log upload
+  - file upload
+  - export
+  - clear logs
+- Avoid writing raw uploaded logs into audit logs.
+
+Expected behavior after this batch:
+- Existing login, case selection, uploads, results, exports, and clear actions should still work.
+- Oversized requests should be rejected with HTTP 413.
+- Sensitive actions should be recorded in data/audit.log.
+
+Files changed:
+- main.py
+- backend/auth_service.py
+- backend/security.py
+
+Important audit-log privacy note:
+- The audit log records metadata such as username, action, path, case_id, log_type, filename, and event_count.
+- It does not copy raw pasted/uploaded log contents into data/audit.log.
+
+Verification for Step 2:
+- Python compile check passed for:
+  - main.py
+  - backend/auth_service.py
+  - backend/security.py
+  - backend/repository.py
+  - backend/log_parser.py
+  - backend/investigation_service.py
+  - backend/scoring.py
+- Flask test-client security smoke test passed using a temporary database and temporary audit file.
+- Verified response headers:
+  - X-Content-Type-Options
+  - X-Frame-Options
+  - Content-Security-Policy
+- Verified session cookie still includes HttpOnly and SameSite=Lax.
+- Verified login success and login failure still work.
+- Verified case creation still works.
+- Verified endpoint log upload still works.
+- Verified file upload still works.
+- Verified JSON export still works.
+- Verified clearing selected case logs still works.
+- Verified oversized upload is rejected with HTTP 413.
+- Verified audit entries were written for:
+  - login
+  - case_create
+  - upload_logs
+  - upload_file
+  - export_report
+  - clear_case_logs
+- Verified raw uploaded log content was not written into audit entries.
+
+
+Remaining hardening ideas for next steps
+----------------------------------------
+- Add audit-log viewer or export for administrator use.
+- Add configurable allowed host/origin checks for production deployment.
+
+
+Step 3 - CSRF Protection
+------------------------
+Status: Implemented
+
+What changed:
+- Added CSRF token generation in backend/security.py.
+- Added CSRF validation for all POST, PUT, PATCH, and DELETE requests in main.py.
+- Added a hidden csrf_token field to the login form.
+- Added the CSRF token to the dashboard body as data-csrf-token.
+- Updated frontend/static/script.js so fetch requests send X-CSRF-Token automatically for mutating requests.
+
+Why this matters:
+- It prevents another website from silently forcing a logged-in analyst browser to create cases, upload logs, or clear evidence.
+
+Expected behavior:
+- Normal UI actions keep working because the UI sends the token.
+- Direct POST/DELETE requests without a valid token return HTTP 400.
+
+
+Step 4 - Chain-of-Custody Verification Endpoint
+-----------------------------------------------
+Status: Implemented
+
+What changed:
+- Added LogRepository.verify_case_chain(case_id).
+- Added GET /cases/<case_id>/verify_chain.
+- Added a Verify Chain button in the dashboard.
+- Added audit logging when chain verification is performed.
+
+What the verification checks:
+- Logs are read in ID order for the selected case.
+- Each row's previous_hash must match the previous event's integrity_hash.
+- Each row's integrity_hash must equal SHA-256(previous_hash + raw_log), using the same chain_hash logic as ingestion.
+
+Expected output:
+- valid=true when the selected case chain is intact.
+- valid=false with failure details if a stored raw_log, previous_hash, or integrity_hash was tampered with.
+
+
+Step 5 - Filename Sanitization
+------------------------------
+Status: Implemented
+
+What changed:
+- Uploaded filenames are passed through werkzeug.utils.secure_filename before they are used for validation and audit logging.
+
+Why this matters:
+- Prevents suspicious filenames such as ../../secret.txt or names containing control/path characters from appearing in logs or display output.
+- The app still does not save uploaded files to disk; it only reads their content for analysis.
+
+
+Step 6 - Compliance Documentation
+---------------------------------
+Status: Implemented
+
+What changed:
+- Added a compliance-oriented section to docs/PROJECT_DOCUMENTATION.md covering:
+  - access control
+  - CSRF protection
+  - audit trail
+  - evidence integrity
+  - data privacy
+  - retention expectations
+  - known compliance limitations
+
+Verification for Steps 3-6:
+- Python compile check passed for:
+  - main.py
+  - backend/security.py
+  - backend/auth_service.py
+  - backend/repository.py
+  - backend/log_parser.py
+  - backend/investigation_service.py
+  - backend/scoring.py
+- Flask test-client security smoke test passed.
+- Verified POST /login without CSRF is rejected with HTTP 400.
+- Verified normal login works with a valid CSRF token.
+- Verified POST /cases without CSRF is rejected with HTTP 400.
+- Verified case creation works with X-CSRF-Token.
+- Verified log upload works with X-CSRF-Token.
+- Verified DELETE /cases/<case_id>/logs works with X-CSRF-Token.
+- Verified chain verification returns valid=true for untouched case logs.
+- Verified chain verification returns valid=false after intentional database tampering.
+- Verified filename ../../evil endpoint.log is sanitized to evil_endpoint.log in audit entries.
+- Verified oversized upload still returns HTTP 413.
+- Verified audit log contains verify_chain entries.
+- Verified raw uploaded log content and unsanitized filenames are not written to audit entries.
+
+
+Remaining hardening ideas for later
+-----------------------------------
+- Add audit-log viewer or export for administrator use.
+- Add configurable allowed host/origin checks for production deployment.
+- Add account unlock/admin reset flow for failed login lockouts.
+- Add HTTPS deployment notes and reverse-proxy configuration.

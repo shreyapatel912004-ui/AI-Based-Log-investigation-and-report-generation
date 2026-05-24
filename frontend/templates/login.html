@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="login-page">
-    <form class="login-card" method="post">
+    <form class="login-card" method="post" novalidate>
+        <input name="csrf_token" type="hidden" value="{{ csrf_token }}">
         <div class="brand">
             <span class="brand-mark">AI</span>
             <div>
@@ -22,7 +23,7 @@
 
         <label>
             Username
-            <input name="username" type="text" autocomplete="username" required autofocus>
+            <input name="username" type="text" autocomplete="username" required autofocus value="{{ request.form.get('username', '') }}">
         </label>
 
         <label>

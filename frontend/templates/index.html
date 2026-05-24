@@ -6,7 +6,7 @@
     <title>AI Log Investigation Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body data-username="{{ username }}" data-role="{{ role }}">
+<body data-username="{{ username }}" data-role="{{ role }}" data-csrf-token="{{ csrf_token }}">
     <aside class="sidebar">
         <div class="brand">
             <span class="brand-mark">AI</span>
@@ -19,6 +19,9 @@
         <nav class="nav-list" aria-label="Dashboard sections">
             <a href="#ingest" class="active">Ingest</a>
             <a href="#overview">Overview</a>
+            <a href="#timeline">Timeline</a>
+            <a href="#assistant">Ask</a>
+            <a href="#integrations">Integrations</a>
             <a href="#events">Events</a>
             <a href="#exports">Exports</a>
         </nav>
@@ -45,12 +48,32 @@
                     <p class="eyebrow">Evidence intake</p>
                     <h3>Analyze logs</h3>
                 </div>
-                <button class="ghost-button" id="loadSampleBtn" type="button">Load sample</button>
+                <div class="sample-actions">
+                    <button class="ghost-button" id="loadSampleBtn" type="button">Load sample</button>
+                    <button class="ghost-button" id="loadScenarioOneBtn" type="button">Scenario 1</button>
+                    <button class="ghost-button" id="loadScenarioTwoBtn" type="button">Scenario 2</button>
+                </div>
             </div>
 
             <div class="case-row">
-                <label for="caseName">Case name</label>
-                <input id="caseName" type="text" value="Default Investigation" autocomplete="off">
+                <label for="caseSelect">Case</label>
+                <div class="case-controls">
+                    <select id="caseSelect"></select>
+                    <input id="newCaseName" type="text" placeholder="New case name" autocomplete="off">
+                    <button class="ghost-button" id="createCaseBtn" type="button">Create Case</button>
+                </div>
+                <small id="selectedCaseLabel">No case selected.</small>
+            </div>
+
+            <div class="log-type-row">
+                <label for="logTypeSelect">Log type</label>
+                <select id="logTypeSelect">
+                    <option value="generic">Generic / current mixed logs</option>
+                    <option value="firewall">Firewall logs</option>
+                    <option value="auth">Authentication logs</option>
+                    <option value="endpoint">Endpoint logs</option>
+                    <option value="windows_event">Windows exported event logs</option>
+                </select>
             </div>
 
             <textarea id="logInput" spellcheck="false" placeholder="Paste firewall, auth, web server, endpoint, CSV, JSON, XML, or mixed logs here..."></textarea>
@@ -104,6 +127,56 @@
             </article>
         </section>
 
+        <section class="panel timeline-panel" id="timeline">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Forensic reconstruction</p>
+                    <h3>Incident timeline</h3>
+                </div>
+                <button class="ghost-button" id="refreshTimelineBtn" type="button">Refresh Timeline</button>
+            </div>
+            <div class="timeline-summary" id="timelineSummary">Create or select a case, then analyze logs to build a timeline.</div>
+            <div class="entity-strip" id="entityStrip"></div>
+            <div class="timeline-list" id="timelineList">
+                <div class="empty-state">No timeline events yet.</div>
+            </div>
+        </section>
+
+        <section class="panel ask-panel" id="assistant">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Natural language investigation</p>
+                    <h3>Ask this case</h3>
+                </div>
+            </div>
+            <div class="ask-row">
+                <input id="caseQuestion" type="text" placeholder="Ask: How did the file leave the system?">
+                <button id="askCaseBtn" type="button">Ask</button>
+            </div>
+            <div class="answer-box" id="answerBox">Ask a question about file transfer, ransomware infection, suspicious IPs, or attacks.</div>
+            <div class="query-results" id="queryResults"></div>
+        </section>
+
+        <section class="panel integration-panel" id="integrations">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Enterprise handoff</p>
+                    <h3>SIEM and storage exports</h3>
+                </div>
+                <button class="ghost-button" id="refreshIntegrationBtn" type="button">Check Connectors</button>
+            </div>
+            <div class="integration-status" id="integrationStatus">Export SIEM-ready payloads or push to configured enterprise endpoints.</div>
+            <div class="integration-grid">
+                <button data-integration-export="elastic" type="button">Elastic Bulk</button>
+                <button data-integration-export="splunk" type="button">Splunk HEC</button>
+                <button data-integration-export="cef" type="button">CEF</button>
+                <button data-integration-export="leef" type="button">LEEF</button>
+                <button data-integration-export="ndjson" type="button">NDJSON</button>
+                <button class="ghost-button" data-integration-push="elastic" type="button">Push Elastic</button>
+                <button class="ghost-button" data-integration-push="splunk" type="button">Push Splunk</button>
+            </div>
+        </section>
+
         <section class="panel" id="events">
             <div class="section-heading">
                 <div>
@@ -111,6 +184,7 @@
                     <h3>Stored events</h3>
                 </div>
                 <div class="export-group" id="exports">
+                    <button id="verifyChainBtn" type="button">Verify Chain</button>
                     <button data-export="json" type="button">JSON</button>
                     <button data-export="csv" type="button">CSV</button>
                     <button data-export="pdf" type="button">PDF</button>
