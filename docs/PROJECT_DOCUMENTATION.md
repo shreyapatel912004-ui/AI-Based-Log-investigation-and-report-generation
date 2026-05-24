@@ -57,8 +57,8 @@ Demo users:
 
 | Username | Password | Role |
 | --- | --- | --- |
-| `admin1` | `admin123` | Administrator |
-| `manager1` | `manager123` | Investigation Manager |
+| `admin1` | `| Administrator |
+| `manager1` |  | Investigation Manager |
 
 After login, the dashboard displays the signed-in username and role in the header. The user can end the session using the `Logout` button.
 
