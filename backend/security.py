@@ -1,4 +1,5 @@
 import json
+import os
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,7 +10,10 @@ from flask import request, session
 
 class AuditLogger:
     def __init__(self, audit_path: Path):
-        self.audit_path = Path(audit_path)
+        if os.environ.get("VERCEL"):
+            self.audit_path = Path("/tmp/audit.log")
+        else:
+            self.audit_path = Path(audit_path)
 
     def record(self, action: str, status: str = "success", details: Optional[Dict] = None):
         self.audit_path.parent.mkdir(parents=True, exist_ok=True)
