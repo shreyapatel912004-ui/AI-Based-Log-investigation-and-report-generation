@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ai-log-investigation
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    plan: free
